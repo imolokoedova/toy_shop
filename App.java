@@ -35,6 +35,7 @@ public class App {
 	void toySetWeight(int id, double weight) {
 		Toy toy = toyById(id);
 		toy.weight = weight;
+		System.out.println("modified: " + toy.toJson());
 	}
 	void gambleToy() {
 		int length = toys.size();
@@ -61,7 +62,7 @@ public class App {
 		if (selected.lots == 0) {
 			toys.remove(selected);
 		}
-		System.out.println(String.format("writing to file: %s", selected.toString()));
+		System.out.println(String.format("writing to file: %s", selected.toJson()));
 		toyToFile(selected);
 	}
 	Toy toyById(int id) {
@@ -81,7 +82,7 @@ public class App {
 			f.close();
 		}
 		catch (IOException e) {
-			System.out.println(String.format("failed to save: %s", e));
+			System.out.println(String.format("failed to save: %s", e.toString()));
 		}
 	}
 	void saveToys() {
@@ -134,21 +135,31 @@ public class App {
 		app.loadToys();
 		switch (args[0]) {
 			case "gamble": 
-				int count = Integer.parseInt(args[1]);
-				for (int i=0; i<count; i++) {
-					app.gambleToy();
+				{
+					int count = Integer.parseInt(args[1]);
+					for (int i=0; i<count; i++) {
+						app.gambleToy();
+					}
+					app.saveToys();
 				}
 				break;
 			case "new":
-				String title = args[1];
-				int lots = Integer.parseInt(args[2]);
-				double weight = Double.parseDouble(args[3]);
-				app.toyAppend(title, lots, weight);
-				app.saveToys();
+				{
+					String title = args[1];
+					int lots = Integer.parseInt(args[2]);
+					double weight = Double.parseDouble(args[3]);
+					app.toyAppend(title, lots, weight);
+					app.saveToys();
+				}
 				break;
-			case "show":
+			case "set":
+				{
+					int id = Integer.parseInt(args[1]);
+					double weight = Double.parseDouble(args[2]);
+					app.toySetWeight(id, weight);
+					app.saveToys();
+				}
 				break;
 		}
-		return ;
 	}
 }
