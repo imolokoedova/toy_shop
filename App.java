@@ -17,18 +17,20 @@ public class App {
 		int lots;
 		double weight;
 		public Toy(int id, String title, int lots, double weight) {
-			id = id;
-			title = title;
-			lots = lots;
-			weight = weight;
+			this.id = id;
+			this.title = title;
+			this.lots = lots;
+			this.weight = weight;
 		}
 		String toJson() {
-			return "";
+			return String.format("{\"id\":%d, \"title\":\"%s\", \"lots\":%d, \"weight\":%f}", id, title, lots, weight);
 		}
 	}
 	ArrayList<Toy> toys = new ArrayList();
-	void toyAppend(Toy toy) {
+	void toyAppend(String title, int lots, double weight) {
+		Toy toy = new Toy(toys.size(), title, lots, weight);
 		toys.add(toy);
+		System.out.println("added: " + toy.toJson());
 	}
 	void toySetWeight(int id, double weight) {
 		Toy toy = toyById(id);
@@ -85,16 +87,20 @@ public class App {
 	void saveToys() {
 		JSONParser parser = new JSONParser();
 		try {
-			FileReader f = new FileReader("toys.json");
-			JSONArray js = (JSONArray) parser.parse(f);
-			Iterator<JSONObject> iterator = js.iterator();
-			while (iterator.hasNext()) {
-            	System.out.println(iterator.next());
-            }
-
-			f.close();
+			String str = "[";
+			for (int i=0; i<toys.size(); i++) {
+				if (i != 0) {
+					str += ", ";
+				}
+				str += toys.get(i).toJson();
+				
+			}
+			str += "]";
+			PrintWriter w = new PrintWriter("toys.json");
+			w.println(str);
+			w.close();
 		}
-		catch (Exception e) {
+		catch (IOException e) {
 			System.out.println(String.format("failed to save: %s", e));
 		}		
 	}
@@ -105,7 +111,13 @@ public class App {
 			JSONArray js = (JSONArray) parser.parse(f);
 			Iterator<JSONObject> iterator = js.iterator();
 			while (iterator.hasNext()) {
-            	System.out.println(iterator.next());
+            	JSONObject obj = iterator.next();
+            	int id = ((Long) obj.get("id")).intValue();
+            	String title = (String) obj.get("title");
+            	int lots = ((Long) obj.get("lots")).intValue();
+            	double weight = (Double) obj.get("weight");
+            	Toy toy = new Toy(id, title, lots, weight);
+            	toys.add(toy);
             }
 
 			f.close();
@@ -128,6 +140,10 @@ public class App {
 				}
 				break;
 			case "new":
+				String title = args[1];
+				int lots = Integer.parseInt(args[2]);
+				double weight = Double.parseDouble(args[3]);
+				app.toyAppend(title, lots, weight);
 				app.saveToys();
 				break;
 			case "show":
